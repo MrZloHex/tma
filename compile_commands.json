@@ -1,0 +1,156 @@
+[
+ {
+  "directory": "/home/mzh/Projects/ex-vcon-ws",
+  "arguments": [
+   "gcc",
+   "-o",
+   "obj/base64.o",
+   "-c",
+   "src/base64.c",
+   "-O0",
+   "-Wall",
+   "-Wextra",
+   "-Wpedantic",
+   "-std=c2x",
+   "-Wstrict-aliasing",
+   "-Wno-old-style-declaration",
+   "-Wno-implicit-fallthroug",
+   "-Wno-unused-result",
+   "-Iinc",
+   "-Ilib"
+  ],
+  "file": "src/base64.c"
+ },
+ {
+  "directory": "/home/mzh/Projects/ex-vcon-ws",
+  "arguments": [
+   "gcc",
+   "-o",
+   "obj/handshake.o",
+   "-c",
+   "src/handshake.c",
+   "-O0",
+   "-Wall",
+   "-Wextra",
+   "-Wpedantic",
+   "-std=c2x",
+   "-Wstrict-aliasing",
+   "-Wno-old-style-declaration",
+   "-Wno-implicit-fallthroug",
+   "-Wno-unused-result",
+   "-Iinc",
+   "-Ilib"
+  ],
+  "file": "src/handshake.c"
+ },
+ {
+  "directory": "/home/mzh/Projects/ex-vcon-ws",
+  "arguments": [
+   "gcc",
+   "-o",
+   "obj/mjson.o",
+   "-c",
+   "src/mjson.c",
+   "-O0",
+   "-Wall",
+   "-Wextra",
+   "-Wpedantic",
+   "-std=c2x",
+   "-Wstrict-aliasing",
+   "-Wno-old-style-declaration",
+   "-Wno-implicit-fallthroug",
+   "-Wno-unused-result",
+   "-Iinc",
+   "-Ilib"
+  ],
+  "file": "src/mjson.c"
+ },
+ {
+  "directory": "/home/mzh/Projects/ex-vcon-ws",
+  "arguments": [
+   "gcc",
+   "-o",
+   "obj/sha1.o",
+   "-c",
+   "src/sha1.c",
+   "-O0",
+   "-Wall",
+   "-Wextra",
+   "-Wpedantic",
+   "-std=c2x",
+   "-Wstrict-aliasing",
+   "-Wno-old-style-declaration",
+   "-Wno-implicit-fallthroug",
+   "-Wno-unused-result",
+   "-Iinc",
+   "-Ilib"
+  ],
+  "file": "src/sha1.c"
+ },
+ {
+  "directory": "/home/mzh/Projects/ex-vcon-ws",
+  "arguments": [
+   "gcc",
+   "-o",
+   "obj/utf8.o",
+   "-c",
+   "src/utf8.c",
+   "-O0",
+   "-Wall",
+   "-Wextra",
+   "-Wpedantic",
+   "-std=c2x",
+   "-Wstrict-aliasing",
+   "-Wno-old-style-declaration",
+   "-Wno-implicit-fallthroug",
+   "-Wno-unused-result",
+   "-Iinc",
+   "-Ilib"
+  ],
+  "file": "src/utf8.c"
+ },
+ {
+  "directory": "/home/mzh/Projects/ex-vcon-ws",
+  "arguments": [
+   "gcc",
+   "-o",
+   "obj/ws.o",
+   "-c",
+   "src/ws.c",
+   "-O0",
+   "-Wall",
+   "-Wextra",
+   "-Wpedantic",
+   "-std=c2x",
+   "-Wstrict-aliasing",
+   "-Wno-old-style-declaration",
+   "-Wno-implicit-fallthroug",
+   "-Wno-unused-result",
+   "-Iinc",
+   "-Ilib"
+  ],
+  "file": "src/ws.c"
+ },
+ {
+  "directory": "/home/mzh/Projects/ex-vcon-ws",
+  "arguments": [
+   "gcc",
+   "-o",
+   "obj/ex-vcon-ws.o",
+   "-c",
+   "src/ex-vcon-ws.c",
+   "-O0",
+   "-Wall",
+   "-Wextra",
+   "-Wpedantic",
+   "-std=c2x",
+   "-Wstrict-aliasing",
+   "-Wno-old-style-declaration",
+   "-Wno-implicit-fallthroug",
+   "-Wno-unused-result",
+   "-Iinc",
+   "-Ilib"
+  ],
+  "file": "src/ex-vcon-ws.c"
+ }
+]
