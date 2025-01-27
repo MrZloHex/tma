@@ -24,8 +24,11 @@ TEST_CHK = $(wildcard $(TST)/*.bin)
 
 all: clean compile
 
-compile: binary
+compile: dirs binary
 test: compile tests
+
+dirs:
+	-mkdir -v obj bin
 
 binary: $(OBJECTS)
 	$(CC) -o $(BIN)/$(TARGET) $^ $(LDFLAGS)
