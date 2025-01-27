@@ -24,7 +24,7 @@ TEST_CHK = $(wildcard $(TST)/*.bin)
 
 all: clean compile
 
-compile: clean binary
+compile: binary
 test: compile tests
 
 binary: $(OBJECTS)
@@ -50,6 +50,6 @@ clean:
 	-rm $(OBJECTS)
 
 install: all
-	install:wq
+	install ./bin/tma /home/mzh/.local/tma
 
 
