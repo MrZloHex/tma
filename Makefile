@@ -18,41 +18,31 @@ LIBRARY = $(wildcard $(LIB)/*.c)
 OBJECTS = $(patsubst $(SRC)/%.c, $(OBJ)/%.o, $(SOURCES))
 OBJECTS += $(patsubst $(LIB)/%.c, $(OBJ)/%.o, $(LIBRARY))
 
-TESTS = $(wildcard $(TST)/*.s)
-TEST_RES = $(patsubst $(TST)/%.s, $(BIN)/%.bin, $(TESTS))
-TEST_CHK = $(wildcard $(TST)/*.bin)
-
 all: clean compile
 
 compile: dirs binary
-test: compile tests
 
 dirs:
 	-mkdir -v obj bin
 
 binary: $(OBJECTS)
 	$(CC) -o $(BIN)/$(TARGET) $^ $(LDFLAGS)
-
 $(OBJ)/%.o: $(SRC)/%.c
 	$(CC) -o $@ -c $< $(CFLAGS)
-
 $(OBJ)/%.o: $(LIB)/%.c
 	$(CC) -o $@ -c $< $(CFLAGS)
 
-tests: $(TEST_RES) $(TEST_CHK)
-
-$(TST)/%.bin: $(BIN)/%.bin
-	diff $< $@ > /dev/null || ( echo -e "\033[0;31mFailed test: $<\033[0m" >&2 && exit 1)
-
-$(BIN)/%.bin: $(TST)/%.s
-	$(BIN)/$(TARGET) -i $< -o $@
-
+test: compile
+	./bin/tma --port 8080 >> test.log
+	tail -f test.log
+kill:
+	killall tma
 
 clean:
 	-rm $(BIN)/*
 	-rm $(OBJECTS)
 
-install: all
+install: compile
 	install ./bin/tma /home/mzh/.local/tma
 
 

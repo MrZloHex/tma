@@ -1,20 +1,3 @@
-/*
- * Copyright (C) 2016-2023 Davidson Francis <davidsondfgl@gmail.com>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>
- */
-
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,31 +7,43 @@
 #include <string.h>
 #include <time.h>
 #include <wheather.h>
+#include <trace.h>
+
+#include "tma.h"
 
 void
 onopen(ws_cli_conn_t client)
 {
-	char *cli, *port;
-	cli  = ws_getaddress(client);
-	port = ws_getport(client);
-	printf("Connection opened, addr: %s, port: %s\n", cli, port);
+    char *cli, *port;
+    cli  = ws_getaddress(client);
+    port = ws_getport(client);
+    TRACE_INFO("CONNECTION OPENED");
+    TRACE_DEBUG("addr: %s", cli);
+    TRACE_DEBUG("port: %s", port);
 }
 
 void
 onclose(ws_cli_conn_t client)
 {
-	char *cli;
-	cli = ws_getaddress(client);
-	printf("Connection closed, addr: %s\n", cli);
+    char *cli;
+    cli = ws_getaddress(client);
+    TRACE_INFO("CONNECTION CLOSED");
+    TRACE_DEBUG("addr: %s", cli);
 }
 
 void
 send_responce(ws_cli_conn_t client,
-    const char *msg, int type)
+    char *msg, int type)
 {
-	printf("Responced: %s (size: %" PRId64 ", type: %d), from: %s\n",
-		msg, strlen(msg), type, ws_getaddress(client));
-    ws_sendframe(client, msg, strlen(msg), type);
+    size_t size = strlen(msg);
+    char term = msg[size-1];
+    msg[size-1] = 0;
+    TRACE_INFO("\033[36mSEND\033[0m: `%s`", msg);
+    msg[size-1] = term;
+    TRACE_DEBUG("size: %" PRId64 "", size);
+    TRACE_DEBUG("type: %d", type);
+    TRACE_DEBUG("from: %s", ws_getaddress(client));
+    ws_sendframe(client, msg, size, type);
     free(msg);
 }
 
@@ -69,11 +64,24 @@ z2i
 
 void
 onmessage(ws_cli_conn_t client,
-	const unsigned char *msg, uint64_t size, int type)
+	const unsigned char *raw, uint64_t size, int type)
 {
-	char *cli = ws_getaddress(client);
-	printf("I receive a message: %s (size: %" PRId64 ", type: %d), from: %s\n",
-		msg, size, type, cli);
+    char *cli = ws_getaddress(client);
+
+    char *msg = malloc(size);
+    strcpy(msg, raw);
+    if (*msg == '{')
+    {
+        msg[size-1] = 0;
+        TRACE_INFO("\033[35mRECV\033[0m: `%s`", msg);
+    }
+    else
+    {
+        TRACE_DEBUG("RAW RECV: `%s`", msg);
+    }
+    TRACE_DEBUG("size: %" PRId64 "", size);
+    TRACE_DEBUG("type: %d", type);
+    TRACE_DEBUG("from: %s", cli);
 
     char buf[64] = { 0 };
     double id = 0;
@@ -128,36 +136,19 @@ onmessage(ws_cli_conn_t client,
 
 
 int
-core(void)
+tma(int port)
 {
-	ws_socket(&(struct ws_server){
-		.host = "0.0.0.0",
-		.port = 8080,
-		.thread_loop   = 0,
-		.timeout_ms    = 1000,
-		.evs.onopen    = &onopen,
-		.evs.onclose   = &onclose,
-		.evs.onmessage = &onmessage
-	});
+    tracer_init(TRC_INFO, TP_TIME);
+    TRACE_INFO("====================================================================");
+    TRACE_INFO("STARTING TMA");
+    ws_socket(&(struct ws_server){
+        .host           = "0.0.0.0",
+        .port           = port,
+        .thread_loop    = 0,
+        .timeout_ms     = 1000,
+        .evs.onopen     = &onopen,
+        .evs.onclose    = &onclose,
+        .evs.onmessage  = &onmessage
+    });
 }
-
-#include <unistd.h>
-#include <sys/types.h>
-
-int
-main(void)
-{
-	pid_t pid = fork();
-	if (pid < 0)
-	{
-		fprintf(stderr, "WE FUCKED UP\n");
-		return 1;
-	}
-
-	if (pid == 0)
-	{
-		core();
-	}
-
-	return 0;
-}
+        
