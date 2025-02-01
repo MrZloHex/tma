@@ -1,4 +1,28 @@
-
+# ==============================================================================
+# 
+#	 ███╗   ███╗ ██████╗ ███╗   ██╗ ██████╗ ██╗     ██╗████████╗██╗  ██╗
+#	 ████╗ ████║██╔═══██╗████╗  ██║██╔═══██╗██║     ██║╚══██╔══╝██║  ██║
+#	 ██╔████╔██║██║   ██║██╔██╗ ██║██║   ██║██║     ██║   ██║   ███████║
+#	 ██║╚██╔╝██║██║   ██║██║╚██╗██║██║   ██║██║     ██║   ██║   ██╔══██║
+#	 ██║ ╚═╝ ██║╚██████╔╝██║ ╚████║╚██████╔╝███████╗██║   ██║   ██║  ██║
+#	 ╚═╝     ╚═╝ ╚═════╝ ╚═╝  ╚═══╝ ╚═════╝ ╚══════╝╚═╝   ╚═╝   ╚═╝  ╚═╝
+#
+#                           ░▒▓█ _TMA_ █▓▒░
+#
+#   Makefile
+#   Author     : MrZloHex
+#   Date       : 2025-02-01
+#   Version    : 1.0
+#
+#   Description:
+#       This Makefile compiles and links the tma project sources.
+#       It searches recursively under the "src" directory for source files,
+#       compiles them into "obj", and links the final executable in "bin".
+#
+#   Warning    : This Makefile is so cool it might make your terminal shine!
+# ==============================================================================
+#
+# Verbosity: Set V=1 for verbose output (full commands) or leave it unset for cool, quiet messages.
 V ?= 0
 ifeq ($(V),0)
 	Q = @
@@ -20,16 +44,16 @@ SRC 	= src
 OBJ 	= obj
 BIN 	= bin
 LIB 	=
-TST 	= test
 
 SOURCES = $(shell find $(SRC) -type f -name '*.c')
-LIBRARY = $(wildcard $(LIB)/*.c)
 OBJECTS = $(patsubst $(SRC)/%.c, $(OBJ)/%.o, $(SOURCES))
+
+ifneq ($(strip $(LIB)),)
+LIBRARY = $(wildcard $(LIB)/*.c)
 OBJECTS += $(patsubst $(LIB)/%.c, $(OBJ)/%.o, $(LIBRARY))
+endif
 
-all: clean compile
-
-compile: $(BIN)/$(TARGET) 
+all: $(BIN)/$(TARGET)
 
 $(BIN)/$(TARGET): $(OBJECTS)
 	@mkdir -p $(BIN)
@@ -41,20 +65,25 @@ $(OBJ)/%.o: $(SRC)/%.c
 	@echo "  CC       $(patsubst $(OBJ)/%,%,$@)"
 	$(Q) $(CC) -o $@ -c $< $(CFLAGS)
 
-$(OBJ)/%.o: $(LIB)/%.c
-	@mkdir -p $(@D)
-	@echo "  CC       $(patsubst $(OBJ)/%,%,$@)"
-	$(Q) $(CC) -o $@ -c $< $(CFLAGS)
 
-test: compile
-	./bin/tma --port 8080 -f
-kill:
-	killall tma
+ifneq ($(strip $(LIB)),)
+$(OBJ)/%.o: $(LIB)/%.c
+    @mkdir -p $(@D)
+    @echo "  CC       $(patsubst $(OBJ)/%,%,$@)"
+    $(Q) $(CC) -o $@ -c $< $(CFLAGS)
+endif
 
 clean:
 	$(Q) rm -rf $(OBJ) $(BIN)
 
-install: compile
-	install ./bin/tma /home/mzh/.local/tma
+PORT ?= 8080
+dry-run: $(BIN)/$(TARGET) 
+	@echo "  Launching on port $(PORT)"
+	$(Q) ./bin/tma --port $(PORT) -f
 
+INSTALL_PATH ?= /usr/local/bin
+install: $(BIN)/$(TARGET)
+	@echo "  Installing in $(INSTALL_PATH)"
+	$(Q) install $(BIN)/$(TARGET) $(INSTALL_PATH)/tma
 
+.PHONY: all clean dry-run install
