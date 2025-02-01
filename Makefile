@@ -30,11 +30,32 @@ else
 	Q =
 endif
 
-CC      = gcc
+BUILD ?= release
+
+
+CC      	 = gcc
+
+CFLAGS_BASE  = -Wall -Wextra -Wpedantic -std=c2x -Wstrict-aliasing
+CFLAGS_BASE += -Wno-old-style-declaration -Wno-implicit-fallthroug -Wno-unused-result
+CFLAGS_BASE += -MMD -MP
+CFLAGS_BASE += -Iinc -Ilib -Iinc/ws
+
 CFLAGS  = -O0 -Wall -Wextra -Wpedantic -std=c2x -Wstrict-aliasing
 CFLAGS += -Wno-old-style-declaration -Wno-implicit-fallthroug -Wno-unused-result
+CFLAGS += -MMD -MP
 CFLAGS += -Wno-pointer-sign
 CFLAGS += -Iinc -Ilib -Iinc/ws
+
+ifeq ($(BUILD),debug)
+	CFLAGS  = $(CFLAGS_BASE)
+	CFLAGS += -O0 -g
+	CFLAGS += -Wno-pointer-sign
+else ifeq ($(BUILD),release)
+	CFLAGS  = $(CFLAGS_BASE)
+	CFLAGS += -O2 -Werror
+else
+	$(error Unknown build mode: $(BUILD). Use BUILD=debug or BUILD=release)
+endif
 
 LDFLAGS = -lcurl
 
@@ -86,4 +107,12 @@ install: $(BIN)/$(TARGET)
 	@echo "  Installing in $(INSTALL_PATH)"
 	$(Q) install $(BIN)/$(TARGET) $(INSTALL_PATH)/tma
 
-.PHONY: all clean dry-run install
+debug:
+	$(MAKE) BUILD=debug all
+
+release:
+	$(MAKE) BUILD=release all
+
+.PHONY: all clean dry-run install debug release
+
+-include $(OBJECTS:.o=.d)
