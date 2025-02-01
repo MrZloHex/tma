@@ -35,6 +35,7 @@ usage(const char *program_name)
     printf("\nOptions:\n");
     printf("  -p, --port <port>       Specify the port number to host on (1-65535).\n");
     printf("  -f, --foreground        Run without forking.\n");
+    printf("  -v, --verbose           More verbose logs.\n");
     printf("  -h, --help              Display this help message and exit.\n");
     printf("\nExample:\n");
     printf("  %s -p 8080 -f\n", program_name);
@@ -46,18 +47,21 @@ main(int argc, char *argv[])
 {
     int   port       = 0;
     bool  foreground = false;
+    bool  verbose    = false;
 
-    static struct option long_options[] = {
-        {"port", required_argument, 0, 'p'},
-        {"help", no_argument, 0, 'h'},
-        {"foreground", no_argument, 0, 'f'},
+    static struct option long_options[] =
+    {
+        {"port",        required_argument,  0, 'p'},
+        {"verbose",     no_argument,        0, 'v'},
+        {"foreground",  no_argument,        0, 'f'},
+        {"help",        no_argument,        0, 'h'},
         {0, 0, 0, 0}
     };
 
     int opt;
     int option_index = 0;
 
-    while ((opt = getopt_long(argc, argv, "p:h:f", long_options, &option_index)) != -1)
+    while ((opt = getopt_long(argc, argv, "p:vfh", long_options, &option_index)) != -1)
     {
         switch (opt)
         {
@@ -69,6 +73,10 @@ main(int argc, char *argv[])
                 return 1;
             }
             port = atoi(optarg);
+            break;
+
+        case 'v':
+            verbose = true;
             break;
 
         case 'f':
@@ -95,7 +103,7 @@ main(int argc, char *argv[])
 
     if (foreground)
     {
-        tma(port);
+        tma(port, verbose);
         return 0;
     }
 
@@ -108,7 +116,7 @@ main(int argc, char *argv[])
     
     if (pid == 0)
     {
-        tma(port);
+        tma(port, verbose);
     }
 
     return 0;

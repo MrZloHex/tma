@@ -30,7 +30,7 @@ else
 	Q =
 endif
 
-BUILD ?= release
+BUILD ?= debug
 
 
 CC      	 = gcc
@@ -43,7 +43,6 @@ CFLAGS_BASE += -Iinc -Ilib -Iinc/ws
 ifeq ($(BUILD),debug)
 	CFLAGS  = $(CFLAGS_BASE)
 	CFLAGS += -O0 -g
-	CFLAGS += -Wno-pointer-sign
 else ifeq ($(BUILD),release)
 	CFLAGS  = $(CFLAGS_BASE)
 	CFLAGS += -O2 -Werror
@@ -72,7 +71,7 @@ all: $(BIN)/$(TARGET)
 
 $(BIN)/$(TARGET): $(OBJECTS)
 	@mkdir -p $(BIN)
-	@echo "  CCLD       $(patsubst $(BIN)/%,%,$@)"
+	@echo "  CCLD     $(patsubst $(BIN)/%,%,$@)"
 	$(Q) $(CC) -o $(BIN)/$(TARGET) $^ $(LDFLAGS)
 
 $(OBJ)/%.o: $(SRC)/%.c
@@ -92,9 +91,10 @@ clean:
 	$(Q) rm -rf $(OBJ) $(BIN)
 
 PORT ?= 8080
+VERBOSE ?=
 dry-run: $(BIN)/$(TARGET) 
 	@echo "  Launching on port $(PORT)"
-	$(Q) ./bin/tma --port $(PORT) -f
+	$(Q) ./bin/tma --port $(PORT) -f $(VERBOSE)
 
 INSTALL_PATH ?= /usr/local/bin
 install: $(BIN)/$(TARGET)
