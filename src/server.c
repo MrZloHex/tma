@@ -16,7 +16,7 @@
 #include "protocol.h"
 #include "trace.h"
 #include "util.h"
-#include "wheather.h"
+#include "weather.h"
 
 #include <stddef.h>
 #include <stdlib.h>
@@ -166,7 +166,7 @@ onmessage
             }
             if (strcmp(mlp_msg.params[0], "WEATHER") == 0)
             {
-                Wheather wthr = curr_wheather();
+                Weather wthr = curr_weather();
 
                 char feels[4], temp[4], hum[4], code[4];
                 int_to_charset(wthr.temp,       temp,  1);
