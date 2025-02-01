@@ -36,15 +36,9 @@ BUILD ?= release
 CC      	 = gcc
 
 CFLAGS_BASE  = -Wall -Wextra -Wpedantic -std=c2x -Wstrict-aliasing
-CFLAGS_BASE += -Wno-old-style-declaration -Wno-implicit-fallthroug -Wno-unused-result
+CFLAGS_BASE += -Wno-old-style-declaration
 CFLAGS_BASE += -MMD -MP
 CFLAGS_BASE += -Iinc -Ilib -Iinc/ws
-
-CFLAGS  = -O0 -Wall -Wextra -Wpedantic -std=c2x -Wstrict-aliasing
-CFLAGS += -Wno-old-style-declaration -Wno-implicit-fallthroug -Wno-unused-result
-CFLAGS += -MMD -MP
-CFLAGS += -Wno-pointer-sign
-CFLAGS += -Iinc -Ilib -Iinc/ws
 
 ifeq ($(BUILD),debug)
 	CFLAGS  = $(CFLAGS_BASE)

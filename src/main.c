@@ -1,26 +1,32 @@
+/* ==============================================================================
+ *
+ *  ███╗   ███╗ ██████╗ ███╗   ██╗ ██████╗ ██╗     ██╗████████╗██╗  ██╗
+ *  ████╗ ████║██╔═══██╗████╗  ██║██╔═══██╗██║     ██║╚══██╔══╝██║  ██║
+ *  ██╔████╔██║██║   ██║██╔██╗ ██║██║   ██║██║     ██║   ██║   ███████║
+ *  ██║╚██╔╝██║██║   ██║██║╚██╗██║██║   ██║██║     ██║   ██║   ██╔══██║
+ *  ██║ ╚═╝ ██║╚██████╔╝██║ ╚████║╚██████╔╝███████╗██║   ██║   ██║  ██║
+ *  ╚═╝     ╚═╝ ╚═════╝ ╚═╝  ╚═══╝ ╚═════╝ ╚══════╝╚═╝   ╚═╝   ╚═╝  ╚═╝
+ *
+ *                           ░▒▓█ _TMA_ █▓▒░
+ *
+ *   File       : main.c
+ *   Author     : MrZloHex
+ *   Date       : 2025-01-28
+ *
+ * ==============================================================================
+ */
+
+
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
-#include <string.h>
 #include <getopt.h>
-#include <ctype.h>
 #include <unistd.h>
 #include <sys/types.h>
 
 #include "tma.h"
+#include "util.h"
 
-bool
-is_valid_port(const char *port_str)
-{
-    for (int i = 0; port_str[i] != 0; ++i)
-    {
-        if (!isdigit(port_str[i]))
-        { return 0; }
-    }
-
-    int port = atoi(port_str);
-    return port > 0 && port <= 65535;
-}
 
 void
 usage(const char *program_name)
@@ -28,13 +34,11 @@ usage(const char *program_name)
     printf("Usage: %s [OPTIONS]\n", program_name);
     printf("\nOptions:\n");
     printf("  -p, --port <port>       Specify the port number to host on (1-65535).\n");
-    printf("  -l, --log <logfile>     Specify the file to log all messages.\n");
     printf("  -f, --foreground        Run without forking.\n");
     printf("  -h, --help              Display this help message and exit.\n");
     printf("\nExample:\n");
-    printf("  %s -p 8080 -l server.log\n", program_name);
+    printf("  %s -p 8080 -f\n", program_name);
 }
-
 
 
 int
