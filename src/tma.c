@@ -138,7 +138,7 @@ onmessage(ws_cli_conn_t client,
 int
 tma(int port)
 {
-    tracer_init(TRACE_INFO, TP_TIME);
+    tracer_init(TRC_INFO, TP_TIME);
     TRACE_INFO("====================================================================");
     TRACE_INFO("STARTING TMA");
     ws_socket(&(struct ws_server){

@@ -1,25 +1,30 @@
+/* =============================================================================
+ *                          ░▒▓█ _TMA_ █▓▒░
+ *
+ *   File       : trace.h
+ *   Author     : MrZloHex
+ *   Date       : 2025-02-01
+ *
+ *   Description:
+ *      A library for logging and profiling on STM32 microcontrollers.
+ *
+ *      This library provides a universal mechanism for outputting debug information,
+ *      measuring code execution time using DWT (Data Watchpoint and Trace),
+ *      as well as optional caching of logs in MRAM memory (if available) for subsequent analysis.
+ *
+ *   This library provides a mechanism for outputting debug information,
+ *   measuring code execution time using the CPU cycle counter (via RDTSC),
+ *   and formatting log messages with contextual information.
+ *
+ * =============================================================================
+ */
+
 #ifndef __TRACE_H__
 #define __TRACE_H__
-
-/**
- * @file   trace.h
- * @author Zlobin Aleksey
- * @brief  A library for logging and profiling on STM32 microcontrollers.
- *
- * This library provides a universal mechanism for outputting debug information,
- * measuring code execution time using DWT (Data Watchpoint and Trace),
- * as well as optional caching of logs in MRAM memory (if available) for subsequent analysis.
- *
- * This library provides a mechanism for outputting debug information,
- * measuring code execution time using the CPU cycle counter (via RDTSC),
- * and formatting log messages with contextual information.
- *
- */
 
 #include <stdint.h>
 #include <stdarg.h>
 #include <sys/time.h>
-
 
 typedef enum
 {

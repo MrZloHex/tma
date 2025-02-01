@@ -1,11 +1,18 @@
-/**
- * @file   trace.c
- * @author MrZloHex
- * @brief  Implementation of logging and profiling functions.
+/* =============================================================================
+ *                          ░▒▓█ _TMA_ █▓▒░
  *
- * This file implements:
- * - Logger initialization and configuration.
- * - Formatted log output to the console.
+ *   File       : trace.c
+ *   Author     : MrZloHex
+ *   Date       : 2025-02-01
+ *
+ *   Description: 
+ *      Implementation of logging and profiling functions.
+ *
+ *  This file implements:
+ *      - Logger initialization and configuration.
+ *      - Formatted log output to the console.
+ *
+ * =============================================================================
  */
 
 #include "trace.h"
