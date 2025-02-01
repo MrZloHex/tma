@@ -1,148 +1,72 @@
 /**
  * @file   trace.c
- * @author Zlobin Aleksey
+ * @author MrZloHex
  * @brief  Implementation of logging and profiling functions.
  *
- * This file contains the implementation of the functions declared in trace.h, including:
- * - Logger initialization
- * - Outputting messages to various channels (SWO, UART)
- * - Caching logs in MRAM (when enabled)
- * - Measuring the runtime of functions and converting it to microseconds/nanoseconds
+ * This file implements:
+ * - Logger initialization and configuration.
+ * - Formatted log output to the console.
  */
 
 #include "trace.h"
-#include "stdarg.h"
-#include "stdio.h"
-#include "string.h"
 
+#include <stdio.h>
+#include <stdarg.h>
+#include <stdint.h>
+#include <string.h>
+#include <time.h>
+
+
+Tracer tracer;
 
 static const char *const trace_levels[] =
 {
     "DEBUG", "INFO", "WARN", "ERROR", "FATAL"
 };
 
-static Tracer tracer;
-
-void
-tracer_init
-(
-#ifdef MRAM_CACHING
-    MRAM *mram,
-#endif
-#ifdef UART_TRACING
-	UART_HandleTypeDef *huart,
-#endif
-    Trace_Level level, Trace_Params params
-)
+static const char *const trace_colors[] =
 {
-    tracer = (Tracer)
-    {
-        .base_level = level,
-        .params     = params,
-#ifdef UART_TRACING
-        .huart      = huart,
-#endif
-#ifdef ENABLE_DWT
-        .cpu_freq   = SystemCoreClock,
-#endif
-    };
-#ifdef MRAM_CACHING
-    tracer.mram = mram;
-    mram_read_dword(mram, MRAM_BASE_ADDR, &tracer.entry_quantity);
-    tracer.addr = _tracer_cacl_addr(tracer.entry_quantity);
-#endif
-#ifdef ENABLE_DWT
-    if ((CoreDebug->DEMCR & CoreDebug_DEMCR_TRCENA_Msk) == 0)
-    { CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk; }
+    "\x1b[34m",  // DEBUG: Blue
+    "\x1b[32m",  // INFO:  Green
+    "\x1b[33m",  // WARN:  Yellow
+    "\x1b[31m",  // ERROR: Red
+    "\x1b[35m"   // FATAL: Magenta
+};
 
-    DWT->LAR    = 0xC5ACCE55;
-    DWT->CYCCNT = 0;
-    DWT->CTRL  |= DWT_CTRL_CYCCNTENA_Msk;
+static int
+get_datetime(char *buffer, size_t size)
+{
+    time_t t = time(NULL);
+    struct tm tm_info;
+#if defined(_POSIX_C_SOURCE) && _POSIX_C_SOURCE >= 1
+    localtime_r(&t, &tm_info);
+#else
+    struct tm *tmp = localtime(&t);
+    if (tmp)
+    { tm_info = *tmp; }
 #endif
+
+    return strftime(buffer, size, "%Y-%m-%d %H:%M:%S", &tm_info);
 }
 
 void
-tracer_set_level(Trace_Level level);
-
-#ifdef MRAM_CACHING
-void
-tracer_dump(Trace_Level filter_level)
+tracer_init(Trace_Level level, Trace_Params params)
 {
-    for (size_t i = 0; i <= tracer.entry_quantity; ++i)
-    {
-        Trace_Entry entry;
-        mram_read_array(tracer.mram, _tracer_cacl_addr(i), (uint8_t *)entry.fmt, MAX_ENTRY_DSCR_LEN);
-        mram_read_byte(tracer.mram, _tracer_cacl_addr(i) + MAX_ENTRY_DSCR_LEN, &(entry.lvl));
-         
-        if (entry.lvl < filter_level)
-        { continue; }
-#ifdef SWO_TRACING
-        _tracer_swo_print(entry);
-#endif
-#ifdef UART_TRACING
-        _tracer_usart_print(entry);
-#endif
-    }
+    tracer.base_level = level;
+    tracer.params     = params;
 }
 
 void
-tracer_eraser()
+tracer_set_level(Trace_Level level)
 {
-    mram_write_byte(tracer.mram, MRAM_BASE_ADDR, 0);
-    tracer.entry_quantity = 0;
-    tracer.addr = (MAX_ENTRY_DSCR_LEN + 1) *tracer.entry_quantity;
+    tracer.base_level = level;
 }
 
-void
-_tracer_cache_entry(Trace_Entry entry)
-{
-    HAL_StatusTypeDef res = mram_write_array(tracer.mram, tracer.addr, (uint8_t *)entry.fmt, MAX_ENTRY_DSCR_LEN);
-    res |= mram_write_byte(tracer.mram, tracer.addr + MAX_ENTRY_DSCR_LEN, entry.lvl);
-
-    TRACE_DEBUG("MRAM CACHE %u at %u", res, tracer.addr);
-    if (res != HAL_OK)
-    { TRACE_ERROR("FAILED TO CACHE TRACE"); }
-
-    tracer.addr += MAX_ENTRY_DSCR_LEN + 1;
-    tracer.entry_quantity += 1;
-}
-
-#endif
-
-#ifdef SWO_TRACING
-void
-_tracer_swo_print(Trace_Entry entry)
+static void
+_tracer_print(Trace_Entry entry)
 {
     printf("%s\n", entry.fmt);
     fflush(stdout);
-}
-#endif
-
-#ifdef UART_TRACING
-void
-_tracer_usart_print(Trace_Entry entry)
-{
-    uprintf(tracer.huart, 10, 200, "%s\n", entry.fmt);
-}
-#endif
-
-#include <time.h>
-
-void
-get_timestamp(char *buffer, size_t buffer_size)
-{
-    time_t now = time(NULL);
-    struct tm *local_time = localtime(&now);
-
-    if (local_time == NULL)
-    {
-        perror("localtime");
-        buffer[0] = '\0';
-        return;
-    }
-
-    // Format the time as "YYYY-MM-DD HH:MM:SS"
-    strftime(buffer, buffer_size, "%Y-%m-%d %H:%M:%S", local_time);
 }
 
 void
@@ -157,58 +81,28 @@ tracer_trace
 
     va_list args;
     va_start(args, fmt);
-    
 
-    Trace_Entry entry = { .lvl  = level };
+    Trace_Entry entry = { .lvl = level };
     int pc = 0;
 
     if (IS_ENABLED(TP_TIME))
     {
-        char timestamp[20];
-        get_timestamp(timestamp, sizeof(timestamp));
-        pc += snprintf(entry.fmt, MAX_ENTRY_DSCR_LEN, "%s", timestamp);
+        char datetime[64];
+        get_datetime(datetime, sizeof(datetime));
+        pc += snprintf(entry.fmt, MAX_ENTRY_DSCR_LEN, "[%s]", datetime);
     }
-    pc += snprintf(entry.fmt + pc, MAX_ENTRY_DSCR_LEN - pc, " %5s ", trace_levels[level]);
-
+    pc += snprintf(entry.fmt + pc, MAX_ENTRY_DSCR_LEN - pc, " %s%5s\x1b[0m ", trace_colors[level], trace_levels[level]);
 
     if (IS_ENABLED(TP_FILE))
-    { pc += snprintf(entry.fmt + pc, MAX_ENTRY_DSCR_LEN - pc, "%s:", file); }
+        pc += snprintf(entry.fmt + pc, MAX_ENTRY_DSCR_LEN - pc, "%s:", file);
     if (IS_ENABLED(TP_FUNC))
-    { pc += snprintf(entry.fmt + pc, MAX_ENTRY_DSCR_LEN - pc, "%s:", func); }
+        pc += snprintf(entry.fmt + pc, MAX_ENTRY_DSCR_LEN - pc, "%s:", func);
     if (IS_ENABLED(TP_LINE))
-    { pc += snprintf(entry.fmt + pc, MAX_ENTRY_DSCR_LEN - pc, "%d: ", line); }
+        pc += snprintf(entry.fmt + pc, MAX_ENTRY_DSCR_LEN - pc, "%d: ", line);
 
     pc += vsnprintf(entry.fmt + pc, MAX_ENTRY_DSCR_LEN - pc, fmt, args);
     va_end(args);
 
-
-#ifdef SWO_TRACING
-    _tracer_swo_print(entry);
-#endif
-
-#ifdef UART_TRACING
-    _tracer_usart_print(entry);
-#endif
-
-#ifdef MRAM_CACHING
-    _tracer_cache_entry(entry);
-#endif
-
+    _tracer_print(entry);
 }
-
-#ifdef ENABLE_DWT
-uint32_t
-tracer_get_cycles(void)
-{ return DWT->CYCCNT; }
-
-uint32_t
-tracer_get_us(uint32_t cycles)
-{ return (uint32_t)(((uint64_t)cycles * 1000000ULL)    / tracer.cpu_freq); }
-
-uint32_t
-tracer_get_ns(uint32_t cycles)
-{ return (uint32_t)(((uint64_t)cycles * 1000000000ULL) / tracer.cpu_freq); }
-
-#endif
-
 
