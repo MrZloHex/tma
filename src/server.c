@@ -13,10 +13,9 @@
 
 #include "server.h"
 
-#define MLP_STRINGS
 #include "protocol.h"
 #include "trace.h"
-#include "mjson.h"
+#include "util.h"
 #include "wheather.h"
 
 #include <stddef.h>
@@ -52,28 +51,13 @@ send_responce(ws_cli_conn_t client,
     size_t size = strlen(msg);
     char term = msg[size-1];
     msg[size-1] = 0;
-    TRACE_INFO("\033[3;36mSEND\033[0m `%s`", msg);
+    TRACE_INFO("\033[3;36mSEND\033[0m\t`%s`", msg);
     msg[size-1] = term;
     TRACE_DEBUG("size: %" PRId64 "", size);
     TRACE_DEBUG("type: %d", type);
     TRACE_DEBUG("from: %s", ws_getaddress(client));
     ws_sendframe(client, msg, size, type);
     free(msg);
-}
-
-static int
-z2i
-(
-	mjson_print_fn_t fn,
-	void *fndata,
-	va_list *ap
-)
-{
-	int value = va_arg(*ap, int);
-	if (value < 10)
-		return mjson_printf(fn, fndata, "0%u", value);
-	else
-		return mjson_printf(fn, fndata, "%u", value);
 }
 
 void
@@ -83,8 +67,6 @@ onmessage
 	const unsigned char *raw, uint64_t size, int type
 )
 {
-    char *cli = ws_getaddress(client);
-
     char *msg = malloc(size);
     if (!msg)
     {
@@ -93,6 +75,7 @@ onmessage
     }
     strcpy(msg, (char *)raw);
 
+    char *cli = ws_getaddress(client);
     TRACE_DEBUG("RAW RECV `%s`", raw);
     TRACE_DEBUG("size: %" PRId64 "", size);
     TRACE_DEBUG("type: %d", type);
@@ -102,29 +85,58 @@ onmessage
 
     TRACE_INFO
     (
-        "\x1b[3;35mRECV\x1b[0m %s %s `%s`",
+        "\x1b[3;35mRECV\x1b[0m\t%s %s `%s` `%s` `%s` `%s`",
         MLP_MsgType_STR[mlp_msg.type],
         MLP_MsgAction_STR[mlp_msg.action],
-        mlp_msg.param
+        mlp_msg.params[0],
+        mlp_msg.params[1],
+        mlp_msg.params[2],
+        mlp_msg.params[3]
     );
 
     if (mlp_msg.type == MT_CMD)
     {
         if (mlp_msg.action == MA_REG)
         {
-            char *resp = mjson_aprintf("{%Q:%Q}\n", "result", "ok");
+            char *resp = mlp_make_msg((MLP_Msg){ .type = MT_OK, .action = mlp_msg.action, .params = { mlp_msg.params[0] } });
             send_responce(client, resp, type);
         }
 
         if (mlp_msg.action == MA_HRT)
         {
-            char *resp = mjson_aprintf("{%Q:%Q}\n", "result", "ok");
+            char *resp = mlp_make_msg((MLP_Msg){ .type = MT_OK, .action = mlp_msg.action, .params = { mlp_msg.params[0] } });
             send_responce(client, resp, type);
         }
 
         if (mlp_msg.action == MA_GET)
         {
-            if (strcmp(mlp_msg.param, "TIME") == 0)
+            if (strcmp(mlp_msg.params[0], "TIME") == 0)
+            {
+                time_t rawtime;
+                struct tm *t;
+                time(&rawtime);
+                t = localtime(&rawtime);
+
+                char hour[3], min[3], sec[3];
+                int_to_charset(t->tm_hour, hour, 2);
+                int_to_charset(t->tm_min,  min,  2);
+                int_to_charset(t->tm_sec,  sec,  2);
+                
+                char *resp = mlp_make_msg
+                ((MLP_Msg)
+                    {
+                        .type = MT_OK,
+                        .action = mlp_msg.action,
+                        .params = 
+                        {
+                            mlp_msg.params[0],
+                            hour, min, sec
+                        }
+                    }
+                );
+                send_responce(client, resp, type);
+            }
+            if (strcmp(mlp_msg.params[0], "DATE") == 0)
             {
                 time_t rawtime;
                 struct tm *t;
@@ -132,29 +144,53 @@ onmessage
                 t = localtime(&rawtime);
                 t->tm_year -= 100;
                 t->tm_mon  += 1;
-                
-                char *resp = mjson_aprintf
-                (
-                    "{%Q:\"20%M-%M-%MT%M:%M:%M.000Z\"}\n",
-                    "result",
-                    z2i, t->tm_year, z2i, t->tm_mon, z2i, t->tm_mday,
-                    z2i, t->tm_hour, z2i, t->tm_min, z2i, t->tm_sec
+
+                char year[5] = { '2', '0' }, mon[3], day[3];
+                int_to_charset(t->tm_year, year+2, 2);
+                int_to_charset(t->tm_mon,  mon,    2);
+                int_to_charset(t->tm_mday, day,    2);
+
+                char *resp = mlp_make_msg
+                ((MLP_Msg)
+                    {
+                        .type = MT_OK,
+                        .action = mlp_msg.action,
+                        .params = 
+                        {
+                            mlp_msg.params[0],
+                            year, mon, day
+                        }
+                    }
                 );
                 send_responce(client, resp, type);
             }
-            if (strcmp(mlp_msg.param, "WEATHER") == 0)
+            if (strcmp(mlp_msg.params[0], "WEATHER") == 0)
             {
                 Wheather wthr = curr_wheather();
-                char *resp = mjson_aprintf
-                (
-                    "{%Q:{%Q:%d,%Q:%d,%Q:%d,%Q:%d}}\n",
-                    "result",
-                    "temp", wthr.temp, "feels", wthr.feels_temp,
-                    "humidity", wthr.humidity, "code", wthr.code
+
+                char feels[4], temp[4], hum[4], code[4];
+                int_to_charset(wthr.temp,       temp,  1);
+                int_to_charset(wthr.feels_temp, feels, 1);
+                int_to_charset(wthr.humidity,   hum ,  1);
+                int_to_charset(wthr.code,       code,  1);
+
+                char *resp = mlp_make_msg
+                ((MLP_Msg)
+                    {
+                        .type = MT_OK,
+                        .action = mlp_msg.action,
+                        .params = 
+                        {
+                            mlp_msg.params[0],
+                            temp, feels, hum, code
+                        }
+                    }
                 );
                 send_responce(client, resp, type);
             }
         }
     }
+
+    free(msg);
 }
 

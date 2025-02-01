@@ -20,4 +20,19 @@
 bool
 is_valid_port(const char *port_str);
 
+int
+int_to_charset
+(
+	int  value,
+	char set[],
+	int  digits
+);
+
+void
+reverse
+(
+	char *set,
+	int len
+);
+
 #endif /* __UTIL_H__  */

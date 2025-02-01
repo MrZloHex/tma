@@ -32,29 +32,26 @@ typedef enum
     MA_HRT     = 0x4U,
 } MLP_MsgAction;
 
+
+extern const char *MLP_MsgType_STR[];
+
+extern const char *MLP_MsgAction_STR[];
+
+#define MAX_PARAMS (5)
+
 typedef struct
 {
     MLP_MsgType   type;
     MLP_MsgAction action;
-    char         *param;
+    char         *params[MAX_PARAMS];
 } MLP_Msg;
 
 
 MLP_Msg
 mlp_parse_msg(char *msg);
 
+char *
+mlp_make_msg(MLP_Msg);
+
 #endif /* __PROTOCOL_H__ */
 
-#ifdef MLP_STRINGS
-
-const static char *MLP_MsgType_STR[] =
-{
-    "UNKNOWN", "CMD", "LOG", "OK", "ERR"
-};
-
-const static char *MLP_MsgAction_STR[] =
-{
-    "UNKNOWN", "REG", "GET", "SET", "HRT"
-};
-
-#endif /* MLP_STRINGS */
