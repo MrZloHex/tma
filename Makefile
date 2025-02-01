@@ -1,46 +1,58 @@
-CC = gcc
-CFLAGS =  -O0 -Wall -Wextra -Wpedantic -std=c2x -Wstrict-aliasing
+
+V ?= 0
+ifeq ($(V),0)
+	Q = @
+else
+	Q =
+endif
+
+CC      = gcc
+CFLAGS  = -O0 -Wall -Wextra -Wpedantic -std=c2x -Wstrict-aliasing
 CFLAGS += -Wno-old-style-declaration -Wno-implicit-fallthroug -Wno-unused-result
-CFLAGS += -Iinc -Ilib
+CFLAGS += -Wno-pointer-sign
+CFLAGS += -Iinc -Ilib -Iinc/ws
 
 LDFLAGS = -lcurl
 
-TARGET = tma
+TARGET  = tma
 
-SRC = src
-OBJ = obj
-BIN = bin
-LIB =
-TST = test
+SRC 	= src
+OBJ 	= obj
+BIN 	= bin
+LIB 	=
+TST 	= test
 
-SOURCES = $(wildcard $(SRC)/*.c)
+SOURCES = $(shell find $(SRC) -type f -name '*.c')
 LIBRARY = $(wildcard $(LIB)/*.c)
 OBJECTS = $(patsubst $(SRC)/%.c, $(OBJ)/%.o, $(SOURCES))
 OBJECTS += $(patsubst $(LIB)/%.c, $(OBJ)/%.o, $(LIBRARY))
 
 all: clean compile
 
-compile: dirs binary
+compile: $(BIN)/$(TARGET) 
 
-dirs:
-	-mkdir -v obj bin
+$(BIN)/$(TARGET): $(OBJECTS)
+	@mkdir -p $(BIN)
+	@echo "  CCLD       $(patsubst $(BIN)/%,%,$@)"
+	$(Q) $(CC) -o $(BIN)/$(TARGET) $^ $(LDFLAGS)
 
-binary: $(OBJECTS)
-	$(CC) -o $(BIN)/$(TARGET) $^ $(LDFLAGS)
 $(OBJ)/%.o: $(SRC)/%.c
-	$(CC) -o $@ -c $< $(CFLAGS)
+	@mkdir -p $(@D)
+	@echo "  CC       $(patsubst $(OBJ)/%,%,$@)"
+	$(Q) $(CC) -o $@ -c $< $(CFLAGS)
+
 $(OBJ)/%.o: $(LIB)/%.c
-	$(CC) -o $@ -c $< $(CFLAGS)
+	@mkdir -p $(@D)
+	@echo "  CC       $(patsubst $(OBJ)/%,%,$@)"
+	$(Q) $(CC) -o $@ -c $< $(CFLAGS)
 
 test: compile
-	./bin/tma --port 8080 >> test.log
-	tail -f test.log
+	./bin/tma --port 8080 -f
 kill:
 	killall tma
 
 clean:
-	-rm $(BIN)/*
-	-rm $(OBJECTS)
+	$(Q) rm -rf $(OBJ) $(BIN)
 
 install: compile
 	install ./bin/tma /home/mzh/.local/tma

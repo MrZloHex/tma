@@ -133,11 +133,11 @@ typedef struct Tracer_S
  * @details Automatically substitutes file name, function name, and line number.
  * @see     tracer_trace()
  */
-#define TRACE_DEBUG(...) tracer_trace(TRC_DEBUG, __FILENAME__, __FUNCTION__, __LINE__, __VA_ARGS__)
-#define TRACE_INFO(...)  tracer_trace(TRC_INFO , __FILENAME__, __FUNCTION__, __LINE__, __VA_ARGS__)
-#define TRACE_WARN(...)  tracer_trace(TRC_WARN , __FILENAME__, __FUNCTION__, __LINE__, __VA_ARGS__)
-#define TRACE_ERROR(...) tracer_trace(TRC_ERROR, __FILENAME__, __FUNCTION__, __LINE__, __VA_ARGS__)
-#define TRACE_FATAL(...) tracer_trace(TRC_FATAL, __FILENAME__, __FUNCTION__, __LINE__, __VA_ARGS__)
+#define TRACE_DEBUG(...) tracer_trace(TRC_DEBUG, __FILENAME__, __func__, __LINE__, __VA_ARGS__)
+#define TRACE_INFO(...)  tracer_trace(TRC_INFO , __FILENAME__, __func__, __LINE__, __VA_ARGS__)
+#define TRACE_WARN(...)  tracer_trace(TRC_WARN , __FILENAME__, __func__, __LINE__, __VA_ARGS__)
+#define TRACE_ERROR(...) tracer_trace(TRC_ERROR, __FILENAME__, __func__, __LINE__, __VA_ARGS__)
+#define TRACE_FATAL(...) tracer_trace(TRC_FATAL, __FILENAME__, __func__, __LINE__, __VA_ARGS__)
 
 
 /**

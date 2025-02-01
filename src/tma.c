@@ -85,7 +85,7 @@ onmessage(ws_cli_conn_t client,
 
     char buf[64] = { 0 };
     double id = 0;
-    int n = mjson_get_string(msg, size, "$.method", buf, sizeof(buf));
+    mjson_get_string(msg, size, "$.method", buf, sizeof(buf));
     mjson_get_number(msg, size, "$.id", &id);
 
     if (strcmp(buf, "boot") == 0)
@@ -150,5 +150,7 @@ tma(int port)
         .evs.onclose    = &onclose,
         .evs.onmessage  = &onmessage
     });
+
+    return 0;
 }
         

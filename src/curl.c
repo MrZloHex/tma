@@ -1,6 +1,7 @@
 #include "curl.h"
 
 #include <stdlib.h>
+#include <string.h>
 
 size_t
 WriteMemoryCallback
