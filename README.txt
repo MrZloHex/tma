@@ -42,9 +42,14 @@
   ───────────────────────────────────────────────────────────────  
   ▓ BUILD & RUN  
 
+  ▪ **For dry-run execute**  
   ```sh
-  make &&
-  ./bin/tma -p <PORT> -f
+  make PORT=<YOUR:PORT> dry-run
+  ```
+
+  ▪ **To install**  
+  ```sh
+  sudo make INSTALL_PATH=<YOUR/PATH> install
   ```
 
   ───────────────────────────────────────────────────────────────  
