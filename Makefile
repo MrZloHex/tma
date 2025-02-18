@@ -93,8 +93,8 @@ clean:
 PORT ?= 8080
 VERBOSE ?=
 dry-run: $(BIN)/$(TARGET) 
-	@echo "  Launching on port $(PORT)"
-	$(Q) ./bin/tma --port $(PORT) -f $(VERBOSE)
+	@echo "  EXEC     ./bin/tma --port $(PORT) $(VERBOSE)"
+	$(Q) ./bin/tma --port $(PORT) $(VERBOSE)
 
 INSTALL_PATH ?= /usr/local/bin
 install: $(BIN)/$(TARGET)

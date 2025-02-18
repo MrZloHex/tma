@@ -34,7 +34,7 @@ usage(const char *program_name)
     printf("Usage: %s [OPTIONS]\n", program_name);
     printf("\nOptions:\n");
     printf("  -p, --port <port>       Specify the port number to host on (1-65535).\n");
-    printf("  -f, --foreground        Run without forking.\n");
+    printf("  -f, --fork              Fork process.\n");
     printf("  -v, --verbose           More verbose logs.\n");
     printf("  -h, --help              Display this help message and exit.\n");
     printf("\nExample:\n");
@@ -46,14 +46,13 @@ int
 main(int argc, char *argv[])
 {
     int   port       = 0;
-    bool  foreground = false;
     bool  verbose    = false;
 
     static struct option long_options[] =
     {
         {"port",        required_argument,  0, 'p'},
         {"verbose",     no_argument,        0, 'v'},
-        {"foreground",  no_argument,        0, 'f'},
+        {"fork",        no_argument,        0, 'f'},
         {"help",        no_argument,        0, 'h'},
         {0, 0, 0, 0}
     };
@@ -80,7 +79,12 @@ main(int argc, char *argv[])
             break;
 
         case 'f':
-            foreground = true;
+            if (fork() > 0)
+            { exit(0); }
+
+            fclose(stdout);
+            fclose(stdin);
+            fclose(stderr);
             break;
 
         case 'h':
@@ -101,23 +105,7 @@ main(int argc, char *argv[])
         return 1;
     }
 
-    if (foreground)
-    {
-        tma(port, verbose);
-        return 0;
-    }
-
-    pid_t pid = fork();
-    if (pid < 0)
-    {
-        perror("Error to fork");
-        return 1;
-    }
-    
-    if (pid == 0)
-    {
-        tma(port, verbose);
-    }
+    tma(port, verbose);
 
     return 0;
 }
