@@ -20,6 +20,11 @@
 
 const char *MLP_MsgType_STR[] =
 {
+    "UNKNOWN", "CMD", "LOG", "OK", "ERR"
+};
+
+const char *MLP_MsgType_STR_LOGS[] =
+{
     "UNKNOWN", "CMD", "LOG", " OK", "ERR"
 };
 
@@ -160,7 +165,7 @@ mlp_dump(MLP_Msg msg)
     int n = snprintf
     (
         buffer, 128, "%s %s",
-        MLP_MsgType_STR[msg.type],
+        MLP_MsgType_STR_LOGS[msg.type],
         MLP_MsgAction_STR[msg.action]
     );
 
