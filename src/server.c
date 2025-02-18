@@ -67,13 +67,13 @@ onmessage
 	const unsigned char *raw, uint64_t size, int type
 )
 {
-    char *msg = malloc(size);
+    char *msg = calloc(size, sizeof(char));
     if (!msg)
     {
         TRACE_ERROR("MALLOC");
         exit(1);
     }
-    strcpy(msg, (char *)raw);
+    strncpy(msg, (char *)raw, size-1);
 
     char *cli = ws_getaddress(client);
     TRACE_DEBUG("RAW RECV `%s`", raw);
