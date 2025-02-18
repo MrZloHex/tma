@@ -20,7 +20,7 @@
 
 const char *MLP_MsgType_STR[] =
 {
-    "UNKNOWN", "CMD", "LOG", "OK", "ERR"
+    "UNKNOWN", "CMD", "LOG", " OK", "ERR"
 };
 
 const char *MLP_MsgAction_STR[] =
@@ -150,5 +150,35 @@ mlp_make_msg(MLP_Msg msg)
     return buffer;
 }
 
+char *
+mlp_dump(MLP_Msg msg)
+{
+    char *buffer = malloc(128);
+    if (!buffer)
+    { TRACE_ERROR("FAILED TO ALLOC MSG"); }
+
+    int n = snprintf
+    (
+        buffer, 128, "%s %s",
+        MLP_MsgType_STR[msg.type],
+        MLP_MsgAction_STR[msg.action]
+    );
+
+    for (size_t i = 0; i < MAX_PARAMS; ++i)
+    {
+        if (!msg.params[i])
+        { continue; }
+
+        n += snprintf
+        (
+            buffer + n, 128 - n, " `%s`",
+            msg.params[i]
+        );
+    }
+
+    snprintf(buffer + n, 128 -n, " ");
+
+    return buffer;
+}
 
 

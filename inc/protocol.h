@@ -53,5 +53,8 @@ mlp_parse_msg(char *msg);
 char *
 mlp_make_msg(MLP_Msg);
 
+char *
+mlp_dump(MLP_Msg);
+
 #endif /* __PROTOCOL_H__ */
 
