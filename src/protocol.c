@@ -105,21 +105,18 @@ mlp_get_msg_params(MLP_Msg *mlp, char *msg)
 MLP_Msg
 mlp_parse_msg(char *msg)
 {
-    MLP_MsgType   type   = mlp_get_msg_type(msg);
-    MLP_MsgAction action = mlp_get_msg_action(msg);
+    MLP_Msg mlp = { 0 };
+    mlp.type = mlp_get_msg_type(msg);
 
-    if (!type || !action)
-    { TRACE_ERROR("FAILED TO PARSE MSG"); }
-
-    MLP_Msg mlp =
+    if (mlp.type != MT_LOG)
     {
-        .type   = type,
-        .action = action
-    };
+        mlp.action = mlp_get_msg_action(msg);
+    }
 
     mlp_get_msg_params(&mlp, msg);
 
     return mlp;
+
 }
 
 char *
