@@ -1258,8 +1258,8 @@ struct frame_state_data
  * @attention This is part of the internal API and is documented just
  * for completeness.
  */
-static int validate_utf8_txt(struct ws_frame_data *wfd,
-	struct frame_state_data *fsd)
+static int validate_utf8_txt(struct ws_frame_data *wfd __attribute__((unused)),
+	struct frame_state_data *fsd __attribute__((unused)))
 {
 #ifdef VALIDATE_UTF8
 	/* UTF-8 Validate partial (or not) frame. */

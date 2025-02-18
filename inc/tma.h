@@ -20,6 +20,8 @@
 #ifndef __TMA_H__
 #define __TMA_H__
 
+#include <stdbool.h>
+
 int
 tma(int port, bool verbose);
 
