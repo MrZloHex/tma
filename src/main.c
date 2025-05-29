@@ -85,12 +85,11 @@ main(int argc, char *argv[])
             break;
 
         case 'f':
-            if (fork() > 0)
+            pid_t pid = fork();
+            if (pid < 0)
+            { exit(1); }
+            if (pid > 0)
             { exit(0); }
-
-            fclose(stdout);
-            fclose(stdin);
-            fclose(stderr);
             break;
 
         case 'h':
